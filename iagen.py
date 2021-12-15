@@ -1,13 +1,20 @@
 import sys
-import music21
-import pandas as pd
-import numpy as np
 import time
+
+import music21
+import numpy as np
+import pandas as pd
+import tqdm
 
 
 def inputNote(stream,input_note,input_rhy):
     curr_note = music21.note.Note(music21.note.Note(input_note).nameWithOctave)
     curr_note.duration.quarterLength = input_rhy
+    stream.append(curr_note)
+
+def inputRest(stream,rest_duration):
+    curr_note = music21.note.Rest()
+    curr_note.duration.quarterLength = rest_duration
     stream.append(curr_note)
 
 def findIntervals(array):
@@ -39,7 +46,7 @@ def findDirection(array): #expects input_array / sys.argv[1]
             direction_array = np.append(direction_array, current_direction)
     return direction_array
 
-def genIA(initial_note_array, rhythm_array, direction_array, leap_array, generated_stream, num_gens=5):
+def genIA(initial_note_array, rhythm_array, direction_array, leap_array, generated_stream, num_gens=5, prob_of_note=0.5):
     generated_output = initial_note_array
     for i in range(num_gens):
         last_value = generated_output[-1]
@@ -50,7 +57,6 @@ def genIA(initial_note_array, rhythm_array, direction_array, leap_array, generat
             next_value = last_value + step
             generated_output = np.append(generated_output,next_value)
     
-    print(len(generated_output))
     length_of_entire_seq = len(generated_output)/len(rhythm_array)
     
     for i in range(np.floor(length_of_entire_seq).astype(int)):
@@ -64,20 +70,36 @@ def genIA(initial_note_array, rhythm_array, direction_array, leap_array, generat
     for i in range(len(generated_output)):
         current_note = generated_output[i]
         #fix required to keep contour
-        while current_note>(max(input_array)):
+        while current_note>(max(initial_note_array)):
             current_note = current_note - 24
         octave_corrected = np.append(octave_corrected, current_note)
     generated_output = octave_corrected    
 
     for i in range(len(generated_output)):
-        inputNote(generated_stream,60+generated_output[i],rhythm_array[i])
+        print(prob_of_note)
+        determine_flag = np.random.choice(2,1,p=[1-prob_of_note,prob_of_note])
+        determine_flag.flatten()
+        if i<len(initial_note_array):
+            inputNote(generated_stream,60+generated_output[i],rhythm_array[i])
+        else:
+            if determine_flag>0:
+                inputNote(generated_stream,60+generated_output[i],rhythm_array[i])
+                prob_of_note = prob_of_note + 0.02
+                if prob_of_note > 0.98:
+                    prob_of_note = 0.5
+            else:
+                inputRest(generated_stream,rhythm_array[i])
+                prob_of_note = prob_of_note - 0.02
+                if prob_of_note < 0.02:
+                    prob_of_note = 0.5
+            
     
     return generated_stream
 
 # ingredients:
 # initial note array
 # note array with respect to middle C
-# input array as 1,2,3,... ## 23,15,1,4,11,20
+# input array as 1,2,3,... ## 23,15,1,4,11,22
 input_array = sys.argv[1]
 input_array = input_array.split(",")
 output_array = []
@@ -106,9 +128,9 @@ leap_array = findLeaps(input_array)
 generated_stream = music21.stream.Stream()
 
 # number of generations
-num_gens = 15
+num_gens = 45
 
-genIA(input_array,rhythm_array,direction_array,leap_array,generated_stream,num_gens)
+genIA(input_array,rhythm_array,direction_array,leap_array,generated_stream,num_gens,0.35)
 
 generated_stream.show()
 
