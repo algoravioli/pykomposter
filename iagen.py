@@ -7,7 +7,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
+# from prompt_toolkit import Application
 
+# app = Application(full_screen=True)
+# app.run()
 
 def inputNote(stream,input_note,input_rhy):
     curr_note = music21.note.Note(music21.note.Note(input_note).nameWithOctave)
@@ -77,13 +80,15 @@ def genIA(initial_note_array, rhythm_array, direction_array, leap_array, generat
             new_rhythm_array = np.append(new_rhythm_array,new_rhythm_array[i])
 
     octave_corrected = []
-    print("Correcting Octave Inflation:")
+    print("Correcting Octave Divergence:")
     time.sleep(0.3)
     for i in tqdm(range(len(generated_output))):
         current_note = generated_output[i]
         #fix required to keep contour
-        while current_note>(max(initial_note_array)):
+        while current_note>(max(initial_note_array)+12):
             current_note = current_note - 24
+        while current_note<(min(initial_note_array)):
+            current_note = current_note + 24
             # print(current_note)
         octave_corrected = np.append(octave_corrected, current_note)
     generated_output = octave_corrected    
@@ -105,8 +110,8 @@ def genIA(initial_note_array, rhythm_array, direction_array, leap_array, generat
                     prob_of_note = 0.5
             else:
                 inputRest(generated_stream,new_rhythm_array[i])
-                if np.random.randint(2, size=1).flatten()>0:
-                    prob_of_note = 0
+                # if np.random.randint(2, size=1).flatten()>0:
+                #     prob_of_note = 0
                 prob_of_note = prob_of_note - 0.02
                 if prob_of_note < 0.02:
                     prob_of_note = 0.5
@@ -117,7 +122,7 @@ def genIA(initial_note_array, rhythm_array, direction_array, leap_array, generat
 # ingredients:
 # initial note array
 # note array with respect to middle C
-# input array as 1,2,3,... ## 23,15,1,4,11,22
+# input array as 1,2,3,... ## 23,15,1,4,11,22 ##1st part - 11,13,14,1,2,1,8,11,4,12,11,3,-1,-2,6,9,8
 input_array = sys.argv[1]
 input_array = input_array.split(",")
 output_array = []
@@ -126,7 +131,7 @@ for i in range(len(input_array)):
     output_array.append(int(curr_str))
 input_array = output_array
 
-# rhythm array as 1,0.5,0.25,... ## 1,0.5,1,0.25,0.25,1,0.5,1
+# rhythm array as 1,0.5,0.25,... ## 1,0.5,1,0.25,0.25,1,0.5,1 ##1st part - 0.5,0.5,1,0.5,0.25,0.25,0.75,0.25,0.5,2.5,1,0.5,0.25,0.25,0.75,0.25,1.5
 # rhythm array
 rhythm_array = sys.argv[2]
 rhythm_array = rhythm_array.split(",")
@@ -144,11 +149,11 @@ leap_array = findLeaps(input_array)
 
 # generated stream
 generated_stream = music21.stream.Stream()
-
+()
 # number of generations
 num_gens = 55
 
-genIA(input_array,rhythm_array,direction_array,leap_array,generated_stream,num_gens,0.25)
+genIA(input_array,rhythm_array,direction_array,leap_array,generated_stream,num_gens,0.65)
 
 generated_stream.show()
 plt.show()
