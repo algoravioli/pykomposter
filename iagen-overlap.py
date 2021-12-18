@@ -1,12 +1,12 @@
 import sys
 import time
 
+import matplotlib.pyplot as plt
 import music21
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
 from tqdm import tqdm
+
 # from prompt_toolkit import Application
 
 # app = Application(full_screen=True)
