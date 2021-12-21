@@ -149,7 +149,7 @@ leap_array = findLeaps(input_array)
 
 # generated stream
 generated_stream = music21.stream.Stream()
-()
+
 # number of generations
 num_gens = 55
 
