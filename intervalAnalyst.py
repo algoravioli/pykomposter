@@ -43,7 +43,12 @@ class intervalAnalyst:
                 if k == 0:
                     temp_interval_sequence[k] = 0
                 else:
-                    temp_interval_sequence[k] = interval_sequence[k] + j
+                    if interval_sequence[k] > 0:
+                        temp_interval_sequence[k] = interval_sequence[k] + j
+                    elif interval_sequence[k] < 0:
+                        temp_interval_sequence[k] = interval_sequence[k] - j
+                    elif interval_sequence[k] == 0:
+                        temp_interval_sequence[k] = 0
 
             interval_augmentations_dictionary[entryname] = temp_interval_sequence
 
@@ -76,7 +81,6 @@ class intervalAnalyst:
                             temp_interval_sequence[k] = 0
                         else:
                             temp_interval_sequence[k] = temp_value
-            print(temp_interval_sequence)
             interval_diminutions_dictionary[entryname] = temp_interval_sequence
 
         return interval_diminutions_dictionary
@@ -86,7 +90,7 @@ seq = np.array([4, 5, 1, 12, 5, 15, 2, 0])
 
 dude = intervalAnalyst()
 
-a = dude.Diminutions(seq)
+a = dude.Augmentations(seq)
 print(a)
 
 # %%
