@@ -11,6 +11,11 @@ import tqdm
 import libfmp.c1
 
 
+### INTERVAL ANALYST #####
+"""[summary]
+"""
+
+
 def generateIntervals(pitch_sequence):
     length_of_sequence = len(pitch_sequence)
     interval_sequence = np.array(np.zeros(length_of_sequence))
@@ -85,12 +90,19 @@ class intervalAnalyst:
 
         return interval_diminutions_dictionary
 
+    def prepare(self, pitch_information):
+        augments = self.Augmentations(pitch_information)
+        diminutions = self.Diminutions(pitch_information)
+        augments_df = pd.DataFrame(data=augments)
+        diminutions_df = pd.DataFrame(data=diminutions)
+        return augments_df, diminutions_df
 
-seq = np.array([4, 5, 1, 12, 5, 15, 2, 0])
 
-dude = intervalAnalyst()
+# seq = np.array([4, 5, 1, 12, 5, 15, 2, 0])
 
-a = dude.Augmentations(seq)
-print(a)
+# dude = intervalAnalyst()
+
+# a = dude.Augmentations(seq)
+# print(a)
 
 # %%
