@@ -15,14 +15,17 @@ import actions
 # behaviours:
 import behaviours
 
+# metabehaviours:
+import metabehaviours
+
 
 class pykomposter:
     def __init__(self):
         super(pykomposter, self).__init__()
         self.outlook = {
             "tendency": None,  # tendency: how much of stated behaviour is it likely to follow. List: [2ndary behaviour, float] eg. [stochastic, 0.2]
-            "metabehaviour": None,  # how the komposter model decides the actions to take. String: "string", e.g "random"
-            "op_char": dict(),  # operational characteristics: dict={} containing time-dependencies, and pitch-dependencies.
+            "metabehaviour": None,  # how the komposter model decides the actions to take. Reference (Variable):  e.g metabehaviour.random
+            "op_char": dict(),  # operational characteristics: dict={} containing time-dependencies, and content-dependencies.
         }
 
     # setters
@@ -42,6 +45,12 @@ class pykomposter:
         else:
             raise RuntimeError("ERROR: Tendency list must only contain 2 elements")
 
+    def setMetaBehaviour(self, metabehaviour):
+        self.outlook["metabehaviour"] = metabehaviour
+
+    def setOpChar(self, opchardict):
+        self.outlook["op_char"] = opchardict
+
     ##########################
     # BEHAVIOUR INTERACTIONS #
     ##########################
@@ -49,25 +58,26 @@ class pykomposter:
     def withBehaviour(self, behaviour, action):
         action(self.outlook["metabehaviour"], behaviour, self.outlook["op_char"])
 
-    def setMetaBehaviour(self, metabehaviour):
-        if isinstance(metabehaviour, str):
-            self.outlook["metabehaviour"] = metabehaviour
-        else:
-            raise RuntimeError("ERROR: MetaBehaviour must be a string.")
 
-    def setOpChar(self, opchardict):
-        self.outlook["op_char"] = opchardict
-
+# tests
+music21.environment.set("musicxmlPath", "/usr/bin/musescore")
 
 myKomposter = pykomposter()
 
-time_and_pitch = {"time": [0, 1, 1], "pitch": "aabc"}
+time_and_content = {
+    "time": {"beats": None, "smallest_div": None, "rhythm": [5, 4, 2, 5]},
+    "content": [0, 1, 6, 10, 0, -4, 3],
+}
 
-myKomposter.setOpChar(time_and_pitch)
+myKomposter.setOpChar(time_and_content)
+myKomposter.setMetaBehaviour(metabehaviours.random)
 
 myKomposter.withBehaviour(
     behaviours.intervalAnalyst,
     actions.Compose,
 )
+
+
+# %%
 
 # %%

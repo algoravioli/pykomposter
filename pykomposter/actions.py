@@ -11,13 +11,48 @@ import tqdm
 
 
 def Compose(metabehaviour, behaviour_class, op_char):
-    # sets metabehaviour string
-    metabehaviour_string = metabehaviour
+    # gets time and content information
+    content_information = op_char["content"]
+    time_information = op_char["time"]
 
-    # gets pitch information
-    pitch_information = op_char["pitch"]
+    smallest_div_information = time_information["smallest_div"]
+    # check if smallest_div is empty
+    if smallest_div_information == None:
+        smallest_div = 0.25
+        print("Smallest division was not set. It has been set to 0.25 (1/16th Note).")
 
+    rhythm_information = time_information["rhythm"]
+    # check if rhythm is empty
+    if rhythm_information == []:
+        print("Rhythm array is empty.")
+        # rhythm_empty_flag = 1
+    # else:
+    # rhythm_empty_flag = 0
+
+    beats_information = time_information["beats"]
+    # check if beats is empty
+    if beats_information == None:
+        total_length = np.sum(rhythm_information)
+        print(
+            f"No total duration was given, and thus, it has been set to {total_length}."
+        )
+        beats_information = total_length
+
+    # gets a reference to behaviour_class
     behaviour_ref = behaviour_class()
+    # runs the prepare function to prepare the usable content for each behaviour class
+    choice_set = behaviour_ref.prepare(content_information)
+    # runs the metabehaviour in each class
+    metabehaviour = behaviour_ref.withMetabehaviour(metabehaviour)
+
+    for i in range(2):
+        if str(metabehaviour.__class__.__name__) == "random":
+
+            beat_dict, total_number_of_events = metabehaviour.eventCalculator(
+                smallest_div, rhythm_information, beats_information
+            )
+
+            metabehaviour.run(choice_set, beat_dict, total_number_of_events)
 
 
 # %%

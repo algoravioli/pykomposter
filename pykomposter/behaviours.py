@@ -10,6 +10,8 @@ import tensorflow
 import tqdm
 import libfmp.c1
 
+import metabehaviours
+
 
 ### INTERVAL ANALYST #####
 """[summary]
@@ -90,19 +92,17 @@ class intervalAnalyst:
 
         return interval_diminutions_dictionary
 
-    def prepare(self, pitch_information):
-        augments = self.Augmentations(pitch_information)
-        diminutions = self.Diminutions(pitch_information)
+    def prepare(self, content_information):
+        augments = self.Augmentations(content_information)
+        diminutions = self.Diminutions(content_information)
         augments_df = pd.DataFrame(data=augments)
         diminutions_df = pd.DataFrame(data=diminutions)
-        return augments_df, diminutions_df
+        output_df = pd.concat([augments_df, diminutions_df], axis=1)
+        return output_df
 
+    def withMetabehaviour(self, metabehaviour_ref):
+        metabehaviour_class = metabehaviour_ref()
+        return metabehaviour_class
 
-# seq = np.array([4, 5, 1, 12, 5, 15, 2, 0])
-
-# dude = intervalAnalyst()
-
-# a = dude.Augmentations(seq)
-# print(a)
 
 # %%
