@@ -16,25 +16,25 @@ def Compose(metabehaviour, behaviour_class, op_char):
     time_information = op_char["time"]
 
     smallest_div_information = time_information["smallest_div"]
+    print(smallest_div_information)
     # check if smallest_div is empty
     if smallest_div_information == None:
-        smallest_div = 0.25
-        print("Smallest division was not set. It has been set to 0.25 (1/16th Note).")
+        smallest_div_information = 0.25
+        print(
+            "Smallest Division: Smallest division was not set. It has been set to 0.25 (1/16th Note)."
+        )
 
     rhythm_information = time_information["rhythm"]
     # check if rhythm is empty
     if rhythm_information == []:
-        print("Rhythm array is empty.")
-        # rhythm_empty_flag = 1
-    # else:
-    # rhythm_empty_flag = 0
+        print("Rhythm Dictionary: Rhythm array is empty.")
 
     beats_information = time_information["beats"]
     # check if beats is empty
     if beats_information == None:
         total_length = np.sum(rhythm_information)
         print(
-            f"No total duration was given, and thus, it has been set to {total_length}."
+            f"Beat Dictionary: No total duration was given, and thus, it has been set to {total_length}."
         )
         beats_information = total_length
 
@@ -45,14 +45,22 @@ def Compose(metabehaviour, behaviour_class, op_char):
     # runs the metabehaviour in each class
     metabehaviour = behaviour_ref.withMetabehaviour(metabehaviour)
 
-    for i in range(2):
-        if str(metabehaviour.__class__.__name__) == "random":
+    if str(metabehaviour.__class__.__name__) == "random":
 
-            beat_dict, total_number_of_events = metabehaviour.eventCalculator(
-                smallest_div, rhythm_information, beats_information
-            )
+        beat_dict, total_number_of_events = metabehaviour.eventCalculator(
+            smallest_div_information, rhythm_information, beats_information
+        )
 
-            metabehaviour.run(choice_set, beat_dict, total_number_of_events)
+        score = metabehaviour.run(
+            choice_set,
+            beat_dict,
+            total_number_of_events,
+            content_information,
+            rhythm_information,
+        )
+        print(score)
+
+    return score
 
 
 # %%

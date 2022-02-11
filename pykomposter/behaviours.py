@@ -66,7 +66,7 @@ class intervalAnalyst:
         interval_sequence = generateIntervals(pitch_sequence)
 
         for j in range(number_of_diminutions):
-            entryname = f"diminutions(-{j})"
+            entryname = f"diminution(-{j})"
             temp_interval_sequence = np.array(np.zeros(len(interval_sequence)))
             for k in range(len(interval_sequence)):
                 if k == 0:

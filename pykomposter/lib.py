@@ -1,13 +1,7 @@
 #%%
-import fractions
-import sys
-import time
-
 import music21
 import numpy as np
 import pandas as pd
-import tensorflow
-import tqdm
 
 # function definitions
 import actions
@@ -55,29 +49,52 @@ class pykomposter:
     # BEHAVIOUR INTERACTIONS #
     ##########################
 
-    def withBehaviour(self, behaviour, action):
-        action(self.outlook["metabehaviour"], behaviour, self.outlook["op_char"])
+    def withBehaviour(self, behaviour, compose):
+        score = compose(
+            self.outlook["metabehaviour"], behaviour, self.outlook["op_char"]
+        )
+
+        return score
 
 
-# tests
+# tests()
 music21.environment.set("musicxmlPath", "/usr/bin/musescore")
-
+# music21.environment.set("graphicsPath", "/usr/bin/lilypond")
+us = music21.environment.UserSettings()
+us["lilypondPath"] = "/usr/bin/lilypond"
 myKomposter = pykomposter()
 
+rhythm_arr = []
+
+for i in range(50):
+    choice = np.random.choice([2, 3, 4, 5, 7, 9])
+    rhythm_arr.append(choice)
+
+content_arr = []
+
+for i in range(12):
+    choice = np.random.choice(np.arange(54, 72))
+    content_arr.append(choice)
+
 time_and_content = {
-    "time": {"beats": None, "smallest_div": None, "rhythm": [5, 4, 2, 5]},
-    "content": [0, 1, 6, 10, 0, -4, 3],
+    "time": {
+        "beats": None,
+        "smallest_div": 0.25,
+        "rhythm": rhythm_arr,
+    },
+    "content": content_arr,
 }
 
+print(content_arr)  # [69, 70, 63, 56, 68, 70, 61, 54, 63, 56, 63, 67]
 myKomposter.setOpChar(time_and_content)
 myKomposter.setMetaBehaviour(metabehaviours.random)
-
-myKomposter.withBehaviour(
+# %%
+score = myKomposter.withBehaviour(
     behaviours.intervalAnalyst,
     actions.Compose,
 )
 
+score.show("musicxml")
 
-# %%
 
 # %%
