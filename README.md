@@ -1,4 +1,4 @@
-If you're not using Colab, the suggested method is to run this in a virtual environment:
+If you are not using Colab, the suggested method is to run this in a virtual environment:
 
 # start your virtual environment
 virtualenv --python=python3.10.2 env

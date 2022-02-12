@@ -1,14 +1,10 @@
-#%%
 import fractions
-import sys
-import time
 import math
-import music21
+
 import numpy as np
 import pandas as pd
 import tensorflow
 from tqdm import tqdm
-import pprint
 
 import microactions
 
@@ -139,6 +135,3 @@ class random:
         score = microactions.createScore(part_dict)
 
         return score
-
-
-# %%

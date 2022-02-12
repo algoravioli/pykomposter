@@ -1,2 +1,5 @@
 test.py
 .DS_STORE
+pykomposter/__pycache__/*
+
+.gitignore

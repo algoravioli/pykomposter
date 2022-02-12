@@ -1,4 +1,3 @@
-#%%
 import fractions
 import sys
 import time
@@ -61,6 +60,3 @@ def Compose(metabehaviour, behaviour_class, op_char):
         print(score)
 
     return score
-
-
-# %%
