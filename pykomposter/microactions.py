@@ -72,6 +72,7 @@ def createMeasures(content, beat_dict, rhythm_information):
 
         for j in range(rhythm_information[i]):
             current_beat = beat_dict[f"{j}"]
+            print(current_beat)
             if current_beat == [0]:
                 inputRest(current_measure, 1)
             else:

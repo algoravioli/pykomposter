@@ -1,3 +1,4 @@
+from curses import meta
 import fractions
 import sys
 import time
@@ -56,7 +57,7 @@ def Compose(metabehaviour, behaviour_class, op_char):
             total_number_of_events,
             content_information,
             rhythm_information,
+            behaviour_ref,
         )
-        print(score)
 
     return score

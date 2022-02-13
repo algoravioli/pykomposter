@@ -5,6 +5,7 @@ import time
 import music21
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import tensorflow
 import tqdm
 
@@ -20,7 +21,7 @@ class intervalAnalyst:
     def __init__(self):
         super(intervalAnalyst, self).__init__()
 
-    def generateIntervals(pitch_sequence):
+    def generateIntervals(self, pitch_sequence):
         length_of_sequence = len(pitch_sequence)
         interval_sequence = np.array(np.zeros(length_of_sequence))
         for i in range(length_of_sequence):
@@ -116,22 +117,67 @@ class markovModeller:
 
     def inputArrayToTransitionArray(self, input_array):
         input_array = self.reduceToPitchClass(input_array)
-        input_array = np.array(input_array)
-        output_array = np.array([])
         for i in range(len(input_array)):
             if i > 0:
-                output_array = np.append(
-                    [output_array], [input_array[i - 1], input_array[i]], axis=0
-                )
+                if i == 1:
+                    output_array = [[input_array[i - 1], input_array[i]]]
+                if i > 1:
+                    temp_array = [input_array[i - 1], input_array[i]]
+                    output_array.append(temp_array)
 
         return output_array
 
+    def createStateTransitionCounterUnique(self):
+        all_units = []
+        for i in range(12):
+            for j in range(12):
+                left_unit = i
+                right_unit = j
+                unit = [i, j]
+                all_units.append(unit)
+        return all_units
+
     def generateStateTransitionMatrix(self, input_array):  # [60,53,50,52,85]
         transition_array = self.inputArrayToTransitionArray(input_array)
+        unit_array = self.createStateTransitionCounterUnique()
+        count_array = []
+        for i in unit_array:
+            counter = 0
+            for j in transition_array:
+                if i == j:
+                    counter += 1
+            count_array.append(counter)
 
-        # return state_transition_matrix
+        state_transition_matrix = np.reshape(np.array(count_array), (12, 12))
 
-    # def prepare(self, etc):
+        dummy_array = []
+        stm_output = []
+        for k in range(len(state_transition_matrix)):
+            current_row = state_transition_matrix[k]
+            row_total_occurences = np.sum(current_row)
+            if row_total_occurences == 0:
+                dummy_array = np.zeros(12)
+                dummy_array = dummy_array.tolist()
+            else:
+                for l in range(len(current_row)):
+                    current_num = current_row[l] / row_total_occurences
+                    dummy_array.append(current_num)
+
+            stm_output.append(dummy_array)
+            dummy_array = []
+        state_transition_matrix = stm_output
+        plot_mat = state_transition_matrix
+        plot_df = pd.DataFrame(data=plot_mat)
+        plt.matshow(plot_df)
+        plt.colorbar()
+        plt.show()
+
+        return state_transition_matrix
+
+    def prepare(self, content_information):
+
+        output = self.generateStateTransitionMatrix(content_information)
+        output_df = pd.DataFrame(data=output)
 
     def withMetabehaviour(self, metabehaviour_ref):
         metabehaviour_class = metabehaviour_ref()
