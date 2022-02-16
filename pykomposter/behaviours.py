@@ -166,18 +166,20 @@ class markovModeller:
             stm_output.append(dummy_array)
             dummy_array = []
         state_transition_matrix = stm_output
-        plot_mat = state_transition_matrix
+        return state_transition_matrix
+
+    def showSTM(self, stm):
+        plot_mat = stm
         plot_df = pd.DataFrame(data=plot_mat)
         plt.matshow(plot_df)
         plt.colorbar()
         plt.show()
 
-        return state_transition_matrix
-
     def prepare(self, content_information):
-
         output = self.generateStateTransitionMatrix(content_information)
         output_df = pd.DataFrame(data=output)
+        self.showSTM(output)
+        return output_df
 
     def withMetabehaviour(self, metabehaviour_ref):
         metabehaviour_class = metabehaviour_ref()

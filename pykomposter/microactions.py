@@ -1,7 +1,7 @@
 import fractions
 import sys
 import time
-
+import math
 import music21
 import numpy as np
 import pandas as pd
@@ -46,9 +46,59 @@ def timeSignatureLookup(number_of_beats):
     return out
 
 
+def durationTypeFinder(num):
+    if num == 5:
+        return "16th"
+    if num == 6:
+        return "16th"
+    if num == 7:
+        return "16th"
+    if num == 9:
+        return "32th"
+    if num == 10:
+        return "32th"
+    if num == 11:
+        return "32th"
+    if num == 12:
+        return "32th"
+    if num == 13:
+        return "32th"
+    if num == 14:
+        return "32th"
+    if num == 15:
+        return "32th"
+
+
+def Log2(x):
+    y = math.log10(x) / math.log10(2)
+    return y
+
+
+def isPowerOfTwo(n):
+    m = math.ceil(Log2(n)) == math.floor(Log2(n))
+    return m
+
+
 def inputNote(measure, input_note, input_rhythm):
     curr_note = music21.note.Note(music21.note.Note(input_note).nameWithOctave)
-    curr_note.duration.quarterLength = input_rhythm
+    if isPowerOfTwo(1 / input_rhythm) or (1 / input_rhythm) == 3:
+        curr_note.duration.quarterLength = input_rhythm
+    else:
+        curr_tuplet = music21.duration.Tuplet((1 / input_rhythm), 4)
+        curr_tuplet.setDurationType(durationTypeFinder((1 / input_rhythm)))
+        curr_duration = music21.duration.Duration(
+            durationTypeFinder((1 / input_rhythm))
+        )
+        curr_duration.appendTuplet(curr_tuplet)
+        curr_note.duration = curr_duration
+
+        ##TUPLET CODE
+        # t = duration.Tuplet(5, 4)
+        # t.setDurationType('16th')
+        # d = duration.Duration('16th')
+        # d.appendTuplet(t)
+        # n = note.Note('E-4')
+        # n.duration = d
     measure.append(curr_note)
 
 
@@ -58,43 +108,42 @@ def inputRest(measure, rest_duration):
     measure.append(curr_note)
 
 
-def createMeasures(content, beat_dict, rhythm_information):
+def createMeasures(content, beat_dict, beats_information, total_beats_information):
     # create dictionary to contain all measures
     measures_dictionary = dict()
-
-    for i in range(len(rhythm_information)):
+    beat_number = 0
+    for i in range(len(beats_information)):
         current_measure = music21.stream.Measure(number=i + 1)
-        current_time_signature = timeSignatureLookup(rhythm_information[i])
+        current_time_signature = timeSignatureLookup(beats_information[i])
         current_measure.append(current_time_signature)
-        print(rhythm_information[i])
-
         current_measure_string = f"measure{i+1}"
 
-        for j in range(rhythm_information[i]):
-            current_beat = beat_dict[f"{j}"]
-            print(current_beat)
+        for j in range(beats_information[i]):
+            current_beat = beat_dict[f"{beat_number}"]
             if current_beat == [0]:
                 inputRest(current_measure, 1)
             else:
                 for k in range(len(current_beat)):
                     if len(content) > 0:
-                        random_rest_mechanism = np.random.choice([1, 2], p=[0.05, 0.95])
+                        random_rest_mechanism = (
+                            2  # np.random.choice([1, 2], p=[0.05, 0.95])
+                        )
                         if random_rest_mechanism == 2:
                             inputNote(current_measure, content[0], current_beat[k])
                         if random_rest_mechanism == 1:
                             inputRest(current_measure, current_beat[k])
                         content = np.delete(content, 0)
-
-                    # print(len(content))
-
+            beat_number += 1
         measures_dictionary[current_measure_string] = current_measure
 
-    # print(measures_dictionary)
     return measures_dictionary
 
 
-def createPart(measures_dictionary, part_name):
+def createPart(measures_dictionary, part_name, instrument, metronome_mark):
     current_part = music21.stream.Part(id=f"{part_name}")
+    if part_name == "part0":
+        current_part.insert(0, metronome_mark)
+    current_part.insert(instrument)
     for i in range(len(measures_dictionary)):
         current_measure = measures_dictionary[f"measure{i+1}"]
         current_part.append(current_measure)
@@ -102,8 +151,9 @@ def createPart(measures_dictionary, part_name):
 
 
 def createScore(part_dictionary):
+    score = music21.stream.Stream(id="Score")
+
     for i in range(len(part_dictionary)):
-        score = music21.stream.Score(id="Score")
         score.insert(0, part_dictionary[f"part{i}"])
 
     return score
