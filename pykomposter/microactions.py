@@ -5,7 +5,8 @@ import math
 import music21
 import numpy as np
 import pandas as pd
-import tensorflow
+
+# import tensorflow
 import tqdm
 
 
