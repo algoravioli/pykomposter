@@ -1,5 +1,6 @@
 import fractions
 import math
+import time
 
 import numpy as np
 import pandas as pd
@@ -11,9 +12,9 @@ import microactions
 import matplotlib.pyplot as plt
 
 
-class random:
+class default:
     def __init__(self):
-        super(random, self).__init__()
+        super(default, self).__init__()
 
     def Log2(self, x):
         y = math.log10(x) / math.log10(2)
@@ -29,6 +30,36 @@ class random:
         else:
             number = fractions.Fraction(1, number)
         return number
+
+    def decreasingFunction(self, length):
+        output = np.random.rand(length)
+        output2 = []
+        for i in range(len(output)):
+            curr_num = output[i]
+            curr_num = curr_num / (curr_num**2)
+            output2.append(curr_num)
+        output = output2
+        output = np.array(output)
+        output = -np.sort(-output)
+        divisor = 20
+        while np.sum(output) > 1:
+            output = output / divisor
+            divisor = divisor + 1
+        remainder = 1 - np.sum(output)
+        remainder_distribute = remainder / length
+        output = output + remainder_distribute
+        # print(output)
+        # plt.plot(output)
+        # plt.show()
+        return output
+
+    def generateArray(self, length):
+        output = []
+        for i in range(length):
+            a = i
+            output.append(int(a))
+
+        return output
 
     def eventCalculator(
         self,
@@ -46,10 +77,21 @@ class random:
         else:
             beat_dict = dict()
 
-            for i in tqdm(range(total_beats_information)):
-                max_events_per_beat = np.ceil(1 / smallest_div)
-                number_of_events_this_beat = np.random.randint(
-                    0, max_events_per_beat + 1
+            for i in range(total_beats_information):
+                max_events_per_beat = int(np.ceil(1 / smallest_div))
+                # number_of_events_this_beat = np.random.randint(
+                #     0, max_events_per_beat + 1
+                # )
+                beat_choice_array = np.array(
+                    self.generateArray(max_events_per_beat + 1)
+                )
+                rhythm_probabilities = p = self.decreasingFunction(
+                    max_events_per_beat + 1
+                )
+
+                number_of_events_this_beat = np.random.choice(
+                    beat_choice_array,
+                    p=rhythm_probabilities,
                 )
                 current_beat = []
                 pow_two_array = np.array([])
@@ -108,9 +150,13 @@ class random:
         choice_stack = np.array([])
         while len(choice_stack) < total_number_of_events - len(content_information):
             current_choice = int(
-                np.abs(np.floor(np.random.default_rng().normal(0, random_choice_max)))
+                np.abs(
+                    np.floor(np.random.default_rng().normal(0, random_choice_max / 200))
+                )
             )
-            current_choice = np.abs(np.min([random_choice_max - 1, current_choice]))
+            current_choice = np.abs(
+                np.min([random_choice_max - 1, np.abs(current_choice)])
+            )
             # print(current_choice)
             aug_or_dim = np.random.randint(0, 2)
 
@@ -149,6 +195,27 @@ class random:
         )
         return measures
 
+    ####################
+    # MARKOV FUNCTIONS #
+    ####################
+    def inferenceMatrix(self, state_transition_matrix, note):
+        state_transition_matrix = state_transition_matrix.to_numpy()
+        pitch_class = note % 12
+        multiplier = note // 12
+        # print(f"Current Pitch ={pitch_class}")
+        probabilities = state_transition_matrix[pitch_class, :]
+        # print(probabilities)
+        if np.sum(probabilities) == 0:
+            probabilities = self.decreasingFunction(12)
+
+        next_pitch = np.random.choice(
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], p=probabilities
+        )
+        # print(f"Next Pitch = {next_pitch}")
+
+        next_pitch = next_pitch + (12 * (multiplier))
+        return next_pitch
+
     def markovMeasureGenerator(
         self,
         state_transition_matrix,
@@ -156,8 +223,32 @@ class random:
         total_number_of_events,  # dictionary of total number of events
         beats_information,  # array of number of beats per measure (time signature)
         total_beats_information,  # int of sum of all the beats
+        content_information,
     ):
-        hi = 1
+        content = np.array([])
+        current_note = np.random.choice(content_information)
+        for i in range(total_number_of_events):
+            new_note = self.inferenceMatrix(state_transition_matrix, current_note)
+            content = np.append(content, new_note)
+
+            current_note = new_note
+
+        measures = microactions.createMeasures(
+            content, beat_dict, beats_information, total_beats_information
+        )
+        return measures
+
+    ##################################
+    # FINITE STATE MACHINE FUNCTIONS #
+    ##################################
+
+    def generateFSMMeasures(
+        self, pitch_array, rhythm_dict, beats_information, total_beats_information
+    ):
+        measures = microactions.createMeasures(
+            pitch_array, rhythm_dict, beats_information, total_beats_information
+        )
+        return measures
 
     def run(
         self,
@@ -201,10 +292,76 @@ class random:
             return score
 
         # new if statement for markovModeller
-        if str(behaviour_class.__class__.__name__) == "markovModeller":
+        if str(behaviour_class.__class__.__name__) == "simpleMarkovModeller":
             state_transition_matrix = choice_set
             print("The state transition matrix of the system is:")
             print(state_transition_matrix.round(2).to_markdown())
 
+            part_dict = dict()
             for i in range(parts):
-                measure = self.markovMeasureGenerator()
+                one_set_of_measures = self.markovMeasureGenerator(
+                    state_transition_matrix,
+                    dict_of_beat_dicts[f"part{i}"],
+                    dict_of_beat_dicts[f"total_events{i}"],
+                    beats_information,
+                    total_beats_information,
+                    content_information,
+                )
+                part_dict[f"part{i}"] = microactions.createPart(
+                    one_set_of_measures,
+                    f"part{i}",
+                    instruments_dict[f"{i+1}"],
+                    metronome_mark,
+                )
+
+            score = microactions.createScore(part_dict)
+
+            return score
+
+        if str(behaviour_class.__class__.__name__) == "finiteStateMachine":
+            # figure out way to print diagram
+            part_dict = dict()
+            for i in range(parts):
+                pitch_array = choice_set["pitch"][f"{i+1}"]
+                rhythm_array = choice_set["rhythm"][f"{i+1}"]
+                # print(rhythm_array)
+                rhythm_dict = dict()
+                beat_counter = 0
+                stepper = 0
+                temp_array = []
+                while stepper < len(rhythm_array):
+                    temp_array = np.append(temp_array, rhythm_array[stepper])
+                    # print(temp_array)
+                    if np.sum(temp_array) > 1.0:
+                        remainder = np.sum(temp_array) - 1.0
+                        adjusted_entry = temp_array[-1] - remainder
+                        temp_array = temp_array[:-1]
+                        temp_array = np.append(temp_array, adjusted_entry)
+                        # print(temp_array)
+
+                    if np.sum(temp_array) == 1.0:
+                        rhythm_dict[f"{beat_counter}"] = temp_array.tolist()
+                        temp_array = []
+                        beat_counter += 1
+                    stepper += 1
+                    # print(stepper)
+                    # time.sleep(1)
+
+                # print(rhythm_dict)
+                one_set_of_measures = self.generateFSMMeasures(
+                    pitch_array,
+                    rhythm_dict,
+                    beats_information,
+                    total_beats_information,
+                )
+
+                part_dict[f"part{i}"] = microactions.createPart(
+                    one_set_of_measures,
+                    f"part{i}",
+                    instruments_dict[f"{i+1}"],
+                    metronome_mark,
+                )
+
+            score = microactions.createScore(part_dict)
+
+            return score

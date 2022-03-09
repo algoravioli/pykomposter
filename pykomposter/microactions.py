@@ -81,12 +81,17 @@ def isPowerOfTwo(n):
 
 
 def inputNote(measure, input_note, input_rhythm):
+    # print(input_rhythm)
+
     curr_note = music21.note.Note(music21.note.Note(input_note).nameWithOctave)
-    if isPowerOfTwo(1 / input_rhythm) or (1 / input_rhythm) == 3:
+    if input_rhythm == 0.75:
+        curr_note.duration.quarterLength = input_rhythm
+    elif isPowerOfTwo(1 / input_rhythm) or (1 / input_rhythm) == 3:
         curr_note.duration.quarterLength = input_rhythm
     else:
         curr_tuplet = music21.duration.Tuplet((1 / input_rhythm), 4)
         curr_tuplet.setDurationType(durationTypeFinder((1 / input_rhythm)))
+        print(curr_duration)
         curr_duration = music21.duration.Duration(
             durationTypeFinder((1 / input_rhythm))
         )
@@ -113,6 +118,8 @@ def createMeasures(content, beat_dict, beats_information, total_beats_informatio
     # create dictionary to contain all measures
     measures_dictionary = dict()
     beat_number = 0
+    # print(beat_dict)
+
     for i in range(len(beats_information)):
         current_measure = music21.stream.Measure(number=i + 1)
         current_time_signature = timeSignatureLookup(beats_information[i])
@@ -130,7 +137,10 @@ def createMeasures(content, beat_dict, beats_information, total_beats_informatio
                             2  # np.random.choice([1, 2], p=[0.05, 0.95])
                         )
                         if random_rest_mechanism == 2:
-                            inputNote(current_measure, content[0], current_beat[k])
+                            if content[0] == 0:
+                                inputRest(current_measure, current_beat[k])
+                            else:
+                                inputNote(current_measure, content[0], current_beat[k])
                         if random_rest_mechanism == 1:
                             inputRest(current_measure, current_beat[k])
                         content = np.delete(content, 0)

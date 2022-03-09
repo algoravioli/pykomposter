@@ -7,6 +7,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+############################
+# FOR FINITE STATE MACHINE #
+############################
+from transitions import Machine
+
 # import tensorflow
 import tqdm
 
@@ -106,9 +111,9 @@ class intervalAnalyst:
         return metabehaviour_class
 
 
-class markovModeller:
+class simpleMarkovModeller:
     def __init__(self):
-        super(markovModeller, self).__init__()
+        super(simpleMarkovModeller, self).__init__()
 
     def reduceToPitchClass(self, input_array):
         output_array = []
@@ -188,5 +193,131 @@ class markovModeller:
 
 
 class finiteStateMachine:
+    states = ["1", "2", "3", "4"]
+
     def __init__(self):
         super(finiteStateMachine, self).__init__()
+
+        # self.name = name
+        self.OutputNotes = 0
+        self.machine = Machine(
+            model=self, states=finiteStateMachine.states, initial="1"
+        )
+        self.machine.add_transition(
+            trigger="toState1", source="*", dest="1", after="giveNote1"
+        )  # before and after is able to run a function
+
+        self.machine.add_transition(
+            trigger="toState2", source="*", dest="2", after="giveNote2"
+        )
+
+        self.machine.add_transition(
+            trigger="toState3", source="*", dest="3", after="giveNote3"
+        )
+
+        self.machine.add_transition(
+            trigger="toState4", source="1", dest="4", after="giveNote4"
+        )
+
+        self.pitchdict = {"1": [], "2": [], "3": [], "4": []}
+
+        self.rhythmdict = {"1": [], "2": [], "3": [], "4": []}
+
+    # def giveNote(self, affected_array_number):
+    #     random_pitch = np.random.randint(48, 70)
+    #     random_rhythm = np.random.choice([1, 0.75, 0.5, 0.25])
+
+    #     # for pitch
+    #     for i in range(len(self.pitchdict)):
+    #         if i == affected_array_number:
+    #             self.pitchdict[f"{affected_array_number}"].append(random_pitch)
+    #         else:
+    #             self.pitchdict[f"i"].append(0)
+
+    #     for i in range(len(self.rhythmdict)):
+    #         self.rhythmdict[f"i"].append(random_rhythm)
+
+    def giveNote1(self):
+        random_pitch = np.random.randint(48, 70)
+        random_rhythm = np.random.choice([1, 0.5, 0.25])
+
+        # for pitch
+        for i in range(len(self.pitchdict)):
+            if i == 1:
+                self.pitchdict[f"1"].append(random_pitch)
+            else:
+                self.pitchdict[f"{i+1}"].append(0)
+
+        for i in range(len(self.rhythmdict)):
+            self.rhythmdict[f"{i+1}"].append(random_rhythm)
+
+    def giveNote2(self):
+        random_pitch = np.random.randint(48, 70)
+        random_rhythm = np.random.choice([1, 0.5, 0.25])
+
+        # for pitch
+        for i in range(len(self.pitchdict)):
+            if i == 2:
+                self.pitchdict[f"2"].append(random_pitch)
+            else:
+                self.pitchdict[f"{i+1}"].append(0)
+
+        for i in range(len(self.rhythmdict)):
+            self.rhythmdict[f"{i+1}"].append(random_rhythm)
+
+    def giveNote3(self):
+        random_pitch = np.random.randint(48, 70)
+        random_rhythm = np.random.choice([1, 0.5, 0.25])
+
+        # for pitch
+        for i in range(len(self.pitchdict)):
+            if i == 3:
+                self.pitchdict[f"3"].append(random_pitch)
+            else:
+                self.pitchdict[f"{i+1}"].append(0)
+
+        for i in range(len(self.rhythmdict)):
+            self.rhythmdict[f"{i+1}"].append(random_rhythm)
+
+    def giveNote4(self):
+        random_pitch = np.random.randint(48, 70)
+        random_rhythm = np.random.choice([1, 0.5, 0.25])
+
+        # for pitch
+        for i in range(len(self.pitchdict)):
+            if i == 1:
+                self.pitchdict[f"4"].append(random_pitch)
+            else:
+                self.pitchdict[f"{i+1}"].append(0)
+
+        for i in range(len(self.rhythmdict)):
+            self.rhythmdict[f"{i+1}"].append(random_rhythm)
+
+    def prepare(self, state_transitions, Machine):
+
+        self.list_of_state1_transitions = [
+            self.toState1,
+            self.toState2,
+            self.toState3,
+            self.toState4,
+        ]
+        self.list_of_state2_transitions = [self.toState1, self.toState3]
+        self.list_of_state3_transitions = [self.toState1, self.toState2, self.toState3]
+        self.list_of_state4_transitions = [self.toState1]
+        self.transition_functions = {
+            "1": self.list_of_state1_transitions,
+            "2": self.list_of_state2_transitions,
+            "3": self.list_of_state3_transitions,
+            "4": self.list_of_state4_transitions,
+        }
+
+        for i in range(state_transitions):
+            current_state = int(Machine.state)
+            np.random.choice(self.transition_functions[f"{current_state}"])()
+
+        output_dict = {"pitch": self.pitchdict, "rhythm": self.rhythmdict}
+        return output_dict
+
+    def withMetabehaviour(self, metabehaviour_ref):
+        metabehaviour_class = metabehaviour_ref()
+        return metabehaviour_class

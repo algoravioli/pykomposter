@@ -9,6 +9,8 @@ import pandas as pd
 # import tensorflow
 import tqdm
 
+import behaviours
+
 
 def Compose(metabehaviour, behaviour_class, op_char):
     # gets time and content information
@@ -51,14 +53,27 @@ def Compose(metabehaviour, behaviour_class, op_char):
         rhythm_information_flag = 1
 
     metronome_mark = time_information["tempo"]
+
+    state_transitions = time_information["state_transitions"]
+
     # gets a reference to behaviour_class
     behaviour_ref = behaviour_class()
+    # print(str(behaviour_ref.__class__.__name__))
     # runs the prepare function to prepare the usable content for each behaviour class
-    choice_set = behaviour_ref.prepare(content_information)
+
+    ###########################################
+    # SEPARATE CODE FOR FINITE STATE MACHINES #
+    ###########################################
+    if str(behaviour_ref.__class__.__name__) == "finiteStateMachine":
+        FSM = behaviours.finiteStateMachine()
+        choice_set = FSM.prepare(state_transitions, FSM)
+        # print(choice_set)
+    else:
+        choice_set = behaviour_ref.prepare(content_information)
     # runs the metabehaviour in each class
     metabehaviour = behaviour_ref.withMetabehaviour(metabehaviour)
 
-    if str(metabehaviour.__class__.__name__) == "random":
+    if str(metabehaviour.__class__.__name__) == "default":
 
         dict_of_beat_dicts = dict()
         for i in range(len(instruments_information)):
@@ -82,6 +97,7 @@ def Compose(metabehaviour, behaviour_class, op_char):
             metronome_mark,
             rhythm_information_flag,
             total_beats_information,
+            state_transitions,
             parts=len(instruments_information),
         )
 
