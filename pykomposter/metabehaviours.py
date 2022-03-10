@@ -365,3 +365,47 @@ class default:
             score = microactions.createScore(part_dict)
 
             return score
+
+        if str(behaviour_class.__class__.__name__) == "roidoRipsis":
+            part_dict = dict()
+            for i in range(parts):
+                pitch_array = choice_set["pitch"][f"{i+1}"].tolist()
+
+                # print(pitch_array)
+                rhythm_array = choice_set["rhythm"][f"{i+1}"]
+
+                rhythm_dict = dict()
+                beat_counter = 0
+                stepper = 0
+                temp_array = []
+                while stepper < len(rhythm_array):
+                    temp_array = np.append(temp_array, rhythm_array[stepper])
+                    # print(temp_array)
+                    if np.sum(temp_array) > 1.0:
+                        remainder = np.sum(temp_array) - 1.0
+                        adjusted_entry = temp_array[-1] - remainder
+                        temp_array = temp_array[:-1]
+                        temp_array = np.append(temp_array, adjusted_entry)
+                        # print(temp_array)
+
+                    if np.sum(temp_array) == 1.0:
+                        rhythm_dict[f"{beat_counter}"] = temp_array.tolist()
+                        temp_array = []
+                        beat_counter += 1
+                    stepper += 1
+
+                # time.sleep(1)
+                one_set_of_measures = microactions.createMeasures(
+                    pitch_array, rhythm_dict, beats_information, total_beats_information
+                )
+
+                part_dict[f"part{i}"] = microactions.createPart(
+                    one_set_of_measures,
+                    f"part{i}",
+                    instruments_dict[f"{i+1}"],
+                    metronome_mark,
+                )
+
+            score = microactions.createScore(part_dict)
+
+            return score, choice_set

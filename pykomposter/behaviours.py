@@ -1,26 +1,29 @@
+from asyncio import events
 import fractions
 import sys
 import time
 
+import matplotlib.pyplot as plt
 import music21
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import tqdm
 
 ############################
 # FOR FINITE STATE MACHINE #
 ############################
 from transitions import Machine
 
-# import tensorflow
-import tqdm
+##########################
+# FOR THE XENAKIS MODELS #
+##########################
+
+import statsmodels.api as sm
+import statsmodels.sandbox.distributions.extras as extras
+import scipy.interpolate as interpolate
+import scipy.stats as ss
 
 import metabehaviours
-
-
-### INTERVAL ANALYST #####
-"""[summary]
-"""
 
 
 class intervalAnalyst:
@@ -195,8 +198,9 @@ class simpleMarkovModeller:
 class finiteStateMachine:
     states = ["1", "2", "3", "4"]
 
-    def __init__(self):
+    def __init__(self, state_transitions):
         super(finiteStateMachine, self).__init__()
+        self.state_transitions = state_transitions
 
         # self.name = name
         self.OutputNotes = 0
@@ -293,7 +297,7 @@ class finiteStateMachine:
         for i in range(len(self.rhythmdict)):
             self.rhythmdict[f"{i+1}"].append(random_rhythm)
 
-    def prepare(self, state_transitions, Machine):
+    def prepare(self, Machine):
 
         self.list_of_state1_transitions = [
             self.toState1,
@@ -311,12 +315,170 @@ class finiteStateMachine:
             "4": self.list_of_state4_transitions,
         }
 
-        for i in range(state_transitions):
+        for i in range(self.state_transitions):
             current_state = int(Machine.state)
             np.random.choice(self.transition_functions[f"{current_state}"])()
 
         output_dict = {"pitch": self.pitchdict, "rhythm": self.rhythmdict}
         return output_dict
+
+    def withMetabehaviour(self, metabehaviour_ref):
+        metabehaviour_class = metabehaviour_ref()
+        return metabehaviour_class
+
+
+class cubeXenakis:
+    def __init__(self):
+        super(cubeXenakis, self).__init__()
+
+    def prepare(self):
+        hi = 1
+        return hi
+
+    def withMetabehaviour(self, metabehaviour_ref):
+        metabehaviour_class = metabehaviour_ref()
+        return metabehaviour_class
+
+
+class roidoRipsis:
+    def __init__(self, mu, sigma, skew, kurt):
+        super(roidoRipsis, self).__init__()
+        self.mu = mu
+        self.sigma = sigma
+        self.skew = skew
+        self.kurt = kurt
+
+    def generate_normal_four_moments(mu, sigma, skew, kurt, sd_wide=10, size=10000):
+        ###########################
+        # GRAM-CHARLIER EXPANSION #
+        ###########################
+        f = extras.pdf_mvsk([mu, sigma, skew, kurt])
+        x = np.linspace(mu - sd_wide * sigma, mu + sd_wide * sigma, num=500)
+        y = [f(i) for i in x]
+        yy = np.cumsum(y) / np.sum(y)
+        inv_cdf = interpolate.interp1d(yy, x, fill_value="extrapolate")
+        rr = np.random.rand(size)
+        return inv_cdf(rr)
+
+    def getPitchAndRhythmForBar(self, num_events, bar_length, smallest_div):
+        pitch_array = []
+        rhythm_array = []
+        div_changer = smallest_div
+        possible_event_locations = bar_length / div_changer
+        exitTrigger = 0
+        while possible_event_locations < num_events:
+            div_changer = np.random.choice([smallest_div, 0.125, 0.0625])
+            possible_event_locations = bar_length / div_changer
+            exitTrigger += 1
+            print(
+                f"possible={possible_event_locations},num_events={num_events},{possible_event_locations< num_events}"
+            )
+            if exitTrigger > 10e8:
+                assert (
+                    exitTrigger == 10e8
+                ), "Roidoripsis could not find an adequate solution to the provided distribution values. Please exit and try again, or restart the code."
+
+            # div changer is now the smallest rhythm possible
+        loop_flag = 0
+        beats = []
+        while loop_flag != num_events:
+            possible_array = list(range(int(possible_event_locations)))
+            possible_array2 = [i + 1 for i in possible_array]
+            beat_chosen = np.random.choice(possible_array2)
+            if beat_chosen not in beats:
+                beats.append(beat_chosen)
+                loop_flag = len(beats)
+            # print(
+            # f"loopflag={loop_flag},num_events={num_events},possible={possible_event_locations},t/f={loop_flag != num_events}"
+            # )
+            # print(beats)
+
+        for i in range(int(possible_event_locations)):
+            if i in beats:
+                curr_pitch = np.random.choice([60, 73])
+                # print(curr_pitch)
+                # time.sleep(4)
+                pitch_array.append(curr_pitch)
+            else:
+                pitch_array.append(0)
+            # print(pitch_array)
+            # time.sleep(3)
+            rhythm_array.append(div_changer)
+
+        return pitch_array, rhythm_array
+
+    def prepare(
+        self,
+        beats_information,
+        total_beats_information,
+        number_of_instruments,
+        smallest_div,
+    ):
+        data = roidoRipsis.generate_normal_four_moments(
+            self.mu, self.sigma, self.skew, self.kurt
+        )
+        print(f"The generated distribution is as follows...")
+        plotdata = plt.hist(data)
+        bins_info = plotdata[0]
+        event_array = np.floor(plotdata[1])
+        smallest_value = np.min(event_array)
+        smallest_value = (smallest_value * -1) + 1
+        event_array2 = event_array.tolist()
+        event_array = [i + smallest_value for i in event_array2]
+        # print(event_array)
+
+        ###########################
+        # POSSIBLE EVENTS NUMBERS #
+        ###########################
+        # output_event_array = []
+        # for i in range(len(event_array)):
+        #     curr_num = event_array[i]
+        #     int_num = int(curr_num)
+        #     output_event_array.append(int_num)
+
+        # event_array = output_event_array
+
+        probabilities_of_events_per_cell = bins_info / np.sum(bins_info)
+
+        ###############
+        # SAFETY CODE #
+        ###############
+        if len(event_array) != len(probabilities_of_events_per_cell):
+            length_event_array = len(event_array)
+            length_probs = len(probabilities_of_events_per_cell)
+            if length_event_array > length_probs:
+                difference = length_event_array - length_probs
+                event_array = event_array[: -difference or None]
+            if length_event_array < length_probs:
+                difference = length_probs - length_event_array
+                probabilities_of_events_per_cell = probabilities_of_events_per_cell[
+                    : -difference or None
+                ]
+
+        all_parts_dict = {"pitch": dict(), "rhythm": dict()}
+        for h in range(number_of_instruments):
+            total_pitch_array = np.array([])
+            total_rhythm_array = np.array([])
+            for i in range(len(beats_information)):
+                number_of_events_this_bar = np.random.choice(
+                    event_array, p=probabilities_of_events_per_cell
+                )
+
+                curr_bar_pitch, curr_bar_rhythm = self.getPitchAndRhythmForBar(
+                    number_of_events_this_bar, beats_information[i], smallest_div
+                )
+
+                total_pitch_array = np.append(total_pitch_array, curr_bar_pitch)
+                total_rhythm_array = np.append(total_rhythm_array, curr_bar_rhythm)
+                # print(i)
+
+            # print(total_pitch_array)
+            all_parts_dict["pitch"][f"{h+1}"] = total_pitch_array
+
+            all_parts_dict["rhythm"][f"{h+1}"] = total_rhythm_array
+        # print(all_parts_dict)
+        # time.sleep(7)
+        return all_parts_dict
 
     def withMetabehaviour(self, metabehaviour_ref):
         metabehaviour_class = metabehaviour_ref()

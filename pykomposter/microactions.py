@@ -91,7 +91,7 @@ def inputNote(measure, input_note, input_rhythm):
     else:
         curr_tuplet = music21.duration.Tuplet((1 / input_rhythm), 4)
         curr_tuplet.setDurationType(durationTypeFinder((1 / input_rhythm)))
-        print(curr_duration)
+        # print(curr_duration)
         curr_duration = music21.duration.Duration(
             durationTypeFinder((1 / input_rhythm))
         )
@@ -110,7 +110,19 @@ def inputNote(measure, input_note, input_rhythm):
 
 def inputRest(measure, rest_duration):
     curr_note = music21.note.Rest()
-    curr_note.duration.quarterLength = rest_duration
+    if rest_duration == 0.75:
+        curr_note.duration.quarterLength = 0.75
+    elif isPowerOfTwo(1 / rest_duration) or (1 / rest_duration) == 3:
+        curr_note.duration.quarterLength = rest_duration
+    else:
+        curr_tuplet = music21.duration.Tuplet((1 / rest_duration), 4)
+        curr_tuplet.setDurationType(durationTypeFinder((1 / rest_duration)))
+        # print(curr_duration)
+        curr_duration = music21.duration.Duration(
+            durationTypeFinder((1 / rest_duration))
+        )
+        curr_duration.appendTuplet(curr_tuplet)
+        curr_note.duration = curr_duration
     measure.append(curr_note)
 
 
@@ -118,7 +130,7 @@ def createMeasures(content, beat_dict, beats_information, total_beats_informatio
     # create dictionary to contain all measures
     measures_dictionary = dict()
     beat_number = 0
-    # print(beat_dict)
+    # print(content)
 
     for i in range(len(beats_information)):
         current_measure = music21.stream.Measure(number=i + 1)
@@ -136,6 +148,7 @@ def createMeasures(content, beat_dict, beats_information, total_beats_informatio
                         random_rest_mechanism = (
                             2  # np.random.choice([1, 2], p=[0.05, 0.95])
                         )
+
                         if random_rest_mechanism == 2:
                             if content[0] == 0:
                                 inputRest(current_measure, current_beat[k])

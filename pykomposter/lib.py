@@ -48,9 +48,13 @@ class pykomposter:
     # BEHAVIOUR INTERACTIONS #
     ##########################
 
-    def withBehaviour(self, behaviour, compose):
+    def withBehaviour(self, behaviour, compose, *args, **kwargs):
         score = compose(
-            self.outlook["metabehaviour"], behaviour, self.outlook["op_char"]
+            self.outlook["metabehaviour"],
+            behaviour,
+            self.outlook["op_char"],
+            *args,
+            **kwargs
         )
 
         return score

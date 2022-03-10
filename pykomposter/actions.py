@@ -12,7 +12,7 @@ import tqdm
 import behaviours
 
 
-def Compose(metabehaviour, behaviour_class, op_char):
+def Compose(metabehaviour, behaviour_class, op_char, *args, **kwargs):
     # gets time and content information
     content_information = op_char["content"]
     time_information = op_char["time"]
@@ -55,23 +55,38 @@ def Compose(metabehaviour, behaviour_class, op_char):
     metronome_mark = time_information["tempo"]
 
     state_transitions = time_information["state_transitions"]
-
-    # gets a reference to behaviour_class
-    behaviour_ref = behaviour_class()
+    ########################################
+    # DIFFERENT INSTANCE CALLING MECHANISM #
+    ########################################
+    if str(behaviour_class.__class__.__name__) == "roidoRipsis":
+        print("Behaviour is Roidoripsis.")
+    elif str(behaviour_class.__class__.__name__) == "finiteStateMachine":
+        print(f"Behaviour is {str(behaviour_class.__class__.__name__)}.")
+    else:
+        # gets a reference to behaviour_class
+        behaviour_ref = behaviour_class()
+        print(f"Behaviour is {str(behaviour_class.__class__.__name__)}.")
     # print(str(behaviour_ref.__class__.__name__))
     # runs the prepare function to prepare the usable content for each behaviour class
 
     ###########################################
     # SEPARATE CODE FOR FINITE STATE MACHINES #
     ###########################################
-    if str(behaviour_ref.__class__.__name__) == "finiteStateMachine":
+    if str(behaviour_class.__class__.__name__) == "finiteStateMachine":
         FSM = behaviours.finiteStateMachine()
-        choice_set = FSM.prepare(state_transitions, FSM)
+        choice_set = FSM.prepare(FSM)
         # print(choice_set)
+    elif str(behaviour_class.__class__.__name__) == "roidoRipsis":
+        choice_set = behaviour_class.prepare(
+            beats_information,
+            total_beats_information,
+            len(instruments_information),
+            smallest_div_information,
+        )
     else:
         choice_set = behaviour_ref.prepare(content_information)
     # runs the metabehaviour in each class
-    metabehaviour = behaviour_ref.withMetabehaviour(metabehaviour)
+    metabehaviour = behaviour_class.withMetabehaviour(metabehaviour)
 
     if str(metabehaviour.__class__.__name__) == "default":
 
@@ -92,7 +107,7 @@ def Compose(metabehaviour, behaviour_class, op_char):
             dict_of_beat_dicts,
             content_information,
             beats_information,
-            behaviour_ref,
+            behaviour_class,
             instruments_information,
             metronome_mark,
             rhythm_information_flag,
