@@ -13,6 +13,7 @@ import tqdm
 # FOR FINITE STATE MACHINE #
 ############################
 from transitions import Machine
+from transitions.extensions import GraphMachine
 
 ##########################
 # FOR THE XENAKIS MODELS #
@@ -22,6 +23,10 @@ import statsmodels.api as sm
 import statsmodels.sandbox.distributions.extras as extras
 import scipy.interpolate as interpolate
 import scipy.stats as ss
+
+#####################
+# KOMPOSTER IMPORTS #
+#####################
 
 import metabehaviours
 
@@ -198,13 +203,14 @@ class simpleMarkovModeller:
 class finiteStateMachine:
     states = ["1", "2", "3", "4"]
 
-    def __init__(self, state_transitions):
+    def __init__(self, state_transitions=100):
         super(finiteStateMachine, self).__init__()
+
         self.state_transitions = state_transitions
 
         # self.name = name
         self.OutputNotes = 0
-        self.machine = Machine(
+        self.machine = GraphMachine(
             model=self, states=finiteStateMachine.states, initial="1"
         )
         self.machine.add_transition(
@@ -314,7 +320,7 @@ class finiteStateMachine:
             "3": self.list_of_state3_transitions,
             "4": self.list_of_state4_transitions,
         }
-
+        # print(self.state_transitions)
         for i in range(self.state_transitions):
             current_state = int(Machine.state)
             np.random.choice(self.transition_functions[f"{current_state}"])()
@@ -327,9 +333,9 @@ class finiteStateMachine:
         return metabehaviour_class
 
 
-class cubeXenakis:
+class cubesInCubes:
     def __init__(self):
-        super(cubeXenakis, self).__init__()
+        super(cubesInCubes, self).__init__()
 
     def prepare(self):
         hi = 1

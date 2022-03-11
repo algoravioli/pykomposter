@@ -12,7 +12,8 @@ import tqdm
 import behaviours
 
 
-def Compose(metabehaviour, behaviour_class, op_char, *args, **kwargs):
+def Compose(metabehaviour, behaviour_class, op_char, state_transitions=100):
+    print(state_transitions)
     # gets time and content information
     content_information = op_char["content"]
     time_information = op_char["time"]
@@ -54,7 +55,7 @@ def Compose(metabehaviour, behaviour_class, op_char, *args, **kwargs):
 
     metronome_mark = time_information["tempo"]
 
-    state_transitions = time_information["state_transitions"]
+    # state_transitions = time_information["state_transitions"]
     ########################################
     # DIFFERENT INSTANCE CALLING MECHANISM #
     ########################################
@@ -73,8 +74,10 @@ def Compose(metabehaviour, behaviour_class, op_char, *args, **kwargs):
     # SEPARATE CODE FOR FINITE STATE MACHINES #
     ###########################################
     if str(behaviour_class.__class__.__name__) == "finiteStateMachine":
-        FSM = behaviours.finiteStateMachine()
+        # print(state_transitions)
+        FSM = behaviours.finiteStateMachine(state_transitions)
         choice_set = FSM.prepare(FSM)
+        FSM.get_graph().draw("my_state_diagram.png", prog="dot")
         # print(choice_set)
     elif str(behaviour_class.__class__.__name__) == "roidoRipsis":
         choice_set = behaviour_class.prepare(
