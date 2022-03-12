@@ -181,3 +181,13 @@ def createScore(part_dictionary):
         score.insert(0, part_dictionary[f"part{i}"])
 
     return score
+
+
+def previewArray(array):
+    score_output = music21.stream.Stream()
+
+    for i in range(len(array)):
+        curr_note = music21.note.Note(music21.note.Note(array[i]).nameWithOctave)
+        score_output.append(curr_note)
+
+    return score_output

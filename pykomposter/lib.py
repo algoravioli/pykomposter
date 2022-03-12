@@ -11,6 +11,9 @@ import behaviours
 # metabehaviours:
 import metabehaviours
 
+# microactions
+import microactions
+
 
 class pykomposter:
     def __init__(self):

@@ -77,7 +77,7 @@ def Compose(metabehaviour, behaviour_class, op_char, state_transitions=100):
         # print(state_transitions)
         FSM = behaviours.finiteStateMachine(state_transitions)
         choice_set = FSM.prepare(FSM)
-        FSM.get_graph().draw("my_state_diagram.png", prog="dot")
+        FSM.get_graph().draw("state_diagram.png", prog="dot")
         # print(choice_set)
     elif str(behaviour_class.__class__.__name__) == "roidoRipsis":
         choice_set = behaviour_class.prepare(
