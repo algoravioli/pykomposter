@@ -6,4 +6,5 @@ scipy==1.8.0
 statsmodels==0.13.2
 tqdm==4.62.3
 transitions==0.8.11
-pygraphviz==1.9
+#pygraphviz not available on m1 macs, please comment out
+# pygraphviz==1.9
