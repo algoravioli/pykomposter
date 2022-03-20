@@ -12,7 +12,9 @@ import tqdm
 import behaviours
 
 
-def Compose(metabehaviour, behaviour_class, op_char, state_transitions=100):
+def Compose(
+    metabehaviour, behaviour_class, op_char, state_transitions=100, cubeDict=None
+):
     print(state_transitions)
     # gets time and content information
     content_information = op_char["content"]
@@ -65,14 +67,14 @@ def Compose(metabehaviour, behaviour_class, op_char, state_transitions=100):
         print(f"Behaviour is {str(behaviour_class.__class__.__name__)}.")
     else:
         # gets a reference to behaviour_class
-        behaviour_ref = behaviour_class()
+        behaviour_ref = behaviour_class
         print(f"Behaviour is {str(behaviour_class.__class__.__name__)}.")
     # print(str(behaviour_ref.__class__.__name__))
     # runs the prepare function to prepare the usable content for each behaviour class
 
-    ###########################################
-    # SEPARATE CODE FOR FINITE STATE MACHINES #
-    ###########################################
+    ################################################
+    # SEPARATE CODE FOR BEHAVIOURS REQUIRING INPUT #
+    ################################################
     if str(behaviour_class.__class__.__name__) == "finiteStateMachine":
         # print(state_transitions)
         FSM = behaviours.finiteStateMachine(state_transitions)
@@ -84,6 +86,14 @@ def Compose(metabehaviour, behaviour_class, op_char, state_transitions=100):
             beats_information,
             total_beats_information,
             len(instruments_information),
+            smallest_div_information,
+        )
+    elif str(behaviour_class.__class__.__name__) == "cubesInCubes":
+        cubeMan = behaviours.cubesInCubes(cubeDict)
+        choice_set = cubeMan.prepare(
+            beats_information,
+            total_beats_information,
+            instruments_information,
             smallest_div_information,
         )
     else:

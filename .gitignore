@@ -3,3 +3,5 @@ test.py
 pykomposter/__pycache__/*
 
 .gitignore
+test2.py
+*.png

@@ -1,6 +1,3 @@
-import fractions
-import sys
-import time
 import math
 import music21
 import numpy as np
@@ -190,4 +187,5 @@ def previewArray(array):
         curr_note = music21.note.Note(music21.note.Note(array[i]).nameWithOctave)
         score_output.append(curr_note)
 
-    return score_output
+    score_output.show()
+    # return score_output

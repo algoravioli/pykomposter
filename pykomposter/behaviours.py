@@ -334,12 +334,135 @@ class finiteStateMachine:
 
 
 class cubesInCubes:
-    def __init__(self):
+    def __init__(self, cubeDict={"rotationlist": None}):
         super(cubesInCubes, self).__init__()
+        self.cubeDict = cubeDict
+        self.rotationList = cubeDict["rotationlist"]
 
-    def prepare(self):
-        hi = 1
-        return hi
+    def rotateUp(self, list):
+        order = [3, 4, 7, 8, 5, 6, 1, 2]
+        output_list = []
+        for i in range(8):
+            current_order = order[i] - 1
+            output_list.append(list[current_order])
+
+        return output_list
+
+    def rotateDown(self, list):
+        order = [5, 6, 1, 2, 7, 8, 3, 4]
+        output_list = []
+        for i in range(8):
+            current_order = order[i] - 1
+            output_list.append(list[current_order])
+
+        return output_list
+
+    def rotateLeft(self, list):
+        order = [2, 6, 4, 8, 1, 5, 3, 7]
+        output_list = []
+        for i in range(8):
+            current_order = order[i] - 1
+            output_list.append(list[current_order])
+
+        return output_list
+
+    def rotateRight(self, list):
+        order = [5, 1, 7, 3, 6, 2, 8, 4]
+        output_list = []
+        for i in range(8):
+            current_order = order[i] - 1
+            output_list.append(list[current_order])
+
+        return output_list
+
+    def rhythmToBarConvert(self, number):
+        if number == 0.25:
+            output = [0.25, 0.25, 0.25, 0.25]
+        if number == 0.5:
+            output = [0.5, 0.5]
+        if number == 0.75:
+            output = np.random.choice([1, 2])
+            if output == 1:
+                output = [0.75, 0.25]
+            else:
+                output = [0.25, 0.75]
+        if number == 1:
+            output = [1]
+        return output
+
+    def eventProvider(self, number):
+        if number == 0.25:
+            output = np.random.choice([1, 2, 3, 4])
+        if number == 0.5:
+            output = np.random.choice([1, 2])
+        if number == 0.75:
+            output = np.random.choice([1, 2])
+        if number == 1:
+            output = 1
+        return output
+
+    def formPitchArray(self, rhythm, positionOfEvent, pitch):
+        if rhythm == 0.25:
+            array_length = 4
+        if rhythm == 0.5 or 0.75:
+            array_length = 2
+        if rhythm == 1:
+            array_length = 1
+
+        pitch_array = []
+        for i in range(array_length):
+            if positionOfEvent == i:
+                pitch_array.append(pitch)
+            else:
+                pitch_array.append(0)
+
+        return pitch_array
+
+    def prepare(
+        self,
+        beats_information,
+        total_beats_information,
+        instruments_information,
+        smallest_div_information,
+    ):
+        all_parts_dict = {"pitch": {}, "rhythm": {}}
+        for i in range(len(self.rotationList)):
+            current_action = self.rotationList[i].split(",")
+            current_cube = current_action[0]
+            current_action = current_action[1]
+            print(self.cubeDict[f"cube{current_cube}"])
+            if current_action == "up":
+                self.cubeDict[f"cube{current_cube}"] = self.rotateUp(
+                    self.cubeDict[f"cube{current_cube}"]
+                )
+            elif current_action == "down":
+                self.cubeDict[f"cube{current_cube}"] = self.rotateDown(
+                    self.cubeDict[f"cube{current_cube}"]
+                )
+            elif current_action == "left":
+                self.cubeDict[f"cube{current_cube}"] = self.rotateLeft(
+                    self.cubeDict[f"cube{current_cube}"]
+                )
+            elif current_action == "right":
+                self.cubeDict[f"cube{current_cube}"] = self.rotateRight(
+                    self.cubeDict[f"cube{current_cube}"]
+                )
+
+            for j in range(len(self.cubeDict["cube3"])):
+                curr_rhythm = self.cubeDict["cube2"][j]
+                all_parts_dict["rhythm"][f"{j+1}"] = {
+                    f"{i}": self.rhythmToBarConvert(curr_rhythm)
+                }
+                position_of_event = self.eventProvider(curr_rhythm)
+
+                curr_pitch = self.cubeDict["cube1"][j]
+                all_parts_dict["pitch"][f"{j+1}"] = {
+                    f"{i}": self.formPitchArray(
+                        curr_rhythm, position_of_event, curr_pitch
+                    )
+                }
+
+        return all_parts_dict
 
     def withMetabehaviour(self, metabehaviour_ref):
         metabehaviour_class = metabehaviour_ref()

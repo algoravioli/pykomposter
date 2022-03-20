@@ -250,6 +250,19 @@ class default:
         )
         return measures
 
+    def flattenPitchDict(self, pitch_array):
+        pitch_list = []
+        for i in range(pitch_array):
+            if len(pitch_array[i]) > 1:
+                sub_array_length = len(pitch_array[i])
+                sub_array = pitch_array[i]
+                for j in range(sub_array_length):
+                    pitch_list.append(sub_array[j])
+            else:
+                pitch_list.append(pitch_array[i])
+
+        return pitch_list
+
     def run(
         self,
         choice_set,
@@ -267,7 +280,6 @@ class default:
     ):
         print(f"The behaviour class chosen is {(behaviour_class.__class__.__name__)}")
 
-        # new if statement for intervalAnalyst
         if str(behaviour_class.__class__.__name__) == "intervalAnalyst":
 
             part_dict = dict()
@@ -291,7 +303,6 @@ class default:
 
             return score
 
-        # new if statement for markovModeller
         if str(behaviour_class.__class__.__name__) == "simpleMarkovModeller":
             state_transition_matrix = choice_set
             print("The state transition matrix of the system is:")
@@ -408,4 +419,27 @@ class default:
 
             score = microactions.createScore(part_dict)
 
-            return score, choice_set
+            return score
+
+        if str(behaviour_class.__class__.__name__) == "cubesInCubes":
+            part_dict = dict()
+
+            for i in range(parts):
+                pitch_array = np.array(list(choice_set["pitch"][f"{i+1}"].values()))
+                pitch_array = self.flattenPitchDict(pitch_array)
+                rhythm_array = choice_set["rhythm"][f"{i+1}"]
+
+                one_set_of_measures = microactions.createMeasures(
+                    pitch_array, rhythm_dict, beats_information, total_beats_information
+                )
+
+                part_dict[f"part{i}"] = microactions.createPart(
+                    one_set_of_measures,
+                    f"part{i}",
+                    instruments_dict[f"{i+1}"],
+                    metronome_mark,
+                )
+
+            score = microactions.createScore(part_dict)
+
+            return score
