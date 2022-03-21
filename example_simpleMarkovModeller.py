@@ -31,7 +31,7 @@ for i in range(NumberOfStartingPitches):
 TimeAndContent = {
     "time": {
         "beats": TimeSignatureArray,
-        "smallest_div": 0.25,
+        "smallest_div": 0.125,
         "rhythm": None,
         "tempo": music21.tempo.MetronomeMark(
             "Slow", 40, music21.note.Note(type="quarter")
@@ -40,11 +40,9 @@ TimeAndContent = {
     },
     "content": PitchContentArray,
     "instruments": {
-        "1": music21.instrument.Flute(),
-        "2": music21.instrument.Oboe(),
-        "3": music21.instrument.Violin(),
-        "4": music21.instrument.Viola(),
-        "5": music21.instrument.Violoncello(),
+        "1": music21.instrument.Marimba(),
+        "2": music21.instrument.Xylophone(),
+        "3": music21.instrument.Vibraphone(),
     },
 }
 
@@ -52,7 +50,7 @@ myKomposter.setOpChar(TimeAndContent)
 myKomposter.setMetaBehaviour(metabehaviours.default)
 
 score = myKomposter.withBehaviour(
-    behaviours.roidoRipsis(mu=2, sigma=1, skew=-100, kurt=10), actions.Compose
+    behaviours.simpleMarkovModeller(), actions.Compose, state_transitions=200
 )
 
 score.show("musicxml")

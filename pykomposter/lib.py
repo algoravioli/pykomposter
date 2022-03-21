@@ -52,7 +52,7 @@ class pykomposter:
     ##########################
 
     def withBehaviour(self, behaviour, compose, state_transitions=100, cubeDict=None):
-        print(f" state = {state_transitions}")
+        # print(f" state = {state_transitions}")
         score = compose(
             self.outlook["metabehaviour"],
             behaviour,

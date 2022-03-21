@@ -41,10 +41,9 @@ TimeAndContent = {
     "content": PitchContentArray,
     "instruments": {
         "1": music21.instrument.Flute(),
-        "2": music21.instrument.Oboe(),
-        "3": music21.instrument.Violin(),
-        "4": music21.instrument.Viola(),
-        "5": music21.instrument.Violoncello(),
+        "2": music21.instrument.Flute(),
+        "3": music21.instrument.Flute(),
+        "4": music21.instrument.Flute(),
     },
 }
 
@@ -52,7 +51,7 @@ myKomposter.setOpChar(TimeAndContent)
 myKomposter.setMetaBehaviour(metabehaviours.default)
 
 score = myKomposter.withBehaviour(
-    behaviours.roidoRipsis(mu=2, sigma=1, skew=-100, kurt=10), actions.Compose
+    behaviours.finiteStateMachine(), actions.Compose, state_transitions=200
 )
 
 score.show("musicxml")

@@ -248,7 +248,7 @@ class finiteStateMachine:
     #         self.rhythmdict[f"i"].append(random_rhythm)
 
     def giveNote1(self):
-        random_pitch = np.random.randint(48, 70)
+        random_pitch = np.random.randint(60, 78)
         random_rhythm = np.random.choice([1, 0.5, 0.25])
 
         # for pitch
@@ -262,7 +262,7 @@ class finiteStateMachine:
             self.rhythmdict[f"{i+1}"].append(random_rhythm)
 
     def giveNote2(self):
-        random_pitch = np.random.randint(48, 70)
+        random_pitch = np.random.randint(60, 78)
         random_rhythm = np.random.choice([1, 0.5, 0.25])
 
         # for pitch
@@ -276,7 +276,7 @@ class finiteStateMachine:
             self.rhythmdict[f"{i+1}"].append(random_rhythm)
 
     def giveNote3(self):
-        random_pitch = np.random.randint(48, 70)
+        random_pitch = np.random.randint(60, 78)
         random_rhythm = np.random.choice([1, 0.5, 0.25])
 
         # for pitch
@@ -290,7 +290,7 @@ class finiteStateMachine:
             self.rhythmdict[f"{i+1}"].append(random_rhythm)
 
     def giveNote4(self):
-        random_pitch = np.random.randint(48, 70)
+        random_pitch = np.random.randint(60, 78)
         random_rhythm = np.random.choice([1, 0.5, 0.25])
 
         # for pitch
@@ -524,7 +524,7 @@ class roidoRipsis:
 
         for i in range(int(possible_event_locations)):
             if i in beats:
-                curr_pitch = np.random.choice([60, 73])
+                curr_pitch = np.random.choice(np.arange(60, 73))
                 # print(curr_pitch)
                 # time.sleep(4)
                 pitch_array.append(curr_pitch)
@@ -548,6 +548,7 @@ class roidoRipsis:
         )
         print(f"The generated distribution is as follows...")
         plotdata = plt.hist(data)
+        plt.show()
         bins_info = plotdata[0]
         event_array = np.floor(plotdata[1])
         smallest_value = np.min(event_array)

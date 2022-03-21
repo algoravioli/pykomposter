@@ -15,7 +15,7 @@ import behaviours
 def Compose(
     metabehaviour, behaviour_class, op_char, state_transitions=100, cubeDict=None
 ):
-    print(state_transitions)
+    # print(state_transitions)
     # gets time and content information
     content_information = op_char["content"]
     time_information = op_char["time"]
